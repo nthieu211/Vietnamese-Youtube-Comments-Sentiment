@@ -1,7 +1,7 @@
 from preprocess import text_preprocess, remove_HTML, convert_unicode
 import pandas as pd
 import json
-import plotly.graph_objects as go
+import plotly.express as px
 
 import torch
 import torch.nn as nn
@@ -22,6 +22,7 @@ phobert = AutoModel.from_pretrained(PRETRAINED_MODEL)
 tokenizer = AutoTokenizer.from_pretrained(PRETRAINED_MODEL)
 
 
+# Define Sentiment Classifier and load Save Model
 class SentimentClassifier(nn.Module):
     def __init__(self, n_classes):
         super(SentimentClassifier, self).__init__()
@@ -71,53 +72,74 @@ def infer(text, tokenizer, max_len=MAX_LEN):
     return class_names[y_pred]
 
 
-# Get video comments from Youtube and infer, then store in Dataframe
 def get_video_comments(video_id, api_key):
-    comments_list = []
-    # creating youtube resource object
-    youtube = build("youtube", "v3", developerKey=api_key)
-    # retrieve youtube video results
-    video_response = (
-        youtube.commentThreads().list(part="snippet", videoId=video_id).execute()
-    )
+    """
+    Get the comments from a YouTube video and infer the emotion of each comment.
 
-    # iterate video response
-    while video_response:
-        # extracting required info
-        # from each result object
-        for item in video_response["items"]:
-            # Extracting comments
-            comment = convert_unicode(
-                remove_HTML(
-                    item["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
+    Args:
+        video_id (str): The ID of the YouTube video.
+        api_key (str): The API key for the YouTube API.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the comments and their inferred emotions.
+    """
+    try:
+        comments_list = []
+        # creating youtube resource object
+        youtube = build("youtube", "v3", developerKey=api_key)
+        # retrieve youtube video results
+        video_response = (
+            youtube.commentThreads().list(part="snippet", videoId=video_id).execute()
+        )
+
+        # iterate video response
+        while video_response:
+            # extracting required info
+            # from each result object
+            for item in video_response["items"]:
+                # Extracting comments
+                comment = convert_unicode(
+                    remove_HTML(
+                        item["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
+                    )
                 )
-            )
-            author = item["snippet"]["topLevelComment"]["snippet"]["authorDisplayName"]
-            # Infer
-            emotion = infer(comment, tokenizer)
-            # Append comment and author as a dictionary to the list
-            comments_list.append(
-                {"Author": author, "Comment": comment, "Emotion": emotion}
-            )
+                author = item["snippet"]["topLevelComment"]["snippet"][
+                    "authorDisplayName"
+                ]
 
-        # Again repeat
-        if "nextPageToken" in video_response:
-            video_response = (
-                youtube.commentThreads()
-                .list(
-                    part="snippet",
-                    videoId=video_id,
-                    pageToken=video_response["nextPageToken"],
+                # Infer
+                emotion = infer(comment, tokenizer)
+                # Append comment and author as a dictionary to the list
+                comments_list.append(
+                    {"Author": author, "Comment": comment, "Emotion": emotion}
                 )
-                .execute()
-            )
-        else:
-            break
 
-    return pd.DataFrame(comments_list)
+            # Again repeat
+            if "nextPageToken" in video_response:
+                video_response = (
+                    youtube.commentThreads()
+                    .list(
+                        part="snippet",
+                        videoId=video_id,
+                        pageToken=video_response["nextPageToken"],
+                    )
+                    .execute()
+                )
+            else:
+                break
+
+        return pd.DataFrame(comments_list)
+
+    except:
+        print("Error getting video comments")
 
 
 app = Flask(__name__)
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return redirect(url_for("static", filename="icon.svg"), code=302)
 
 
 @app.route("/", methods=["GET"])
@@ -130,15 +152,45 @@ def analyze():
     VIDEO_ID = request.form["video_id"]
     comments_df = get_video_comments(VIDEO_ID, API_KEY)
 
-    emotions = ["Enjoyment", "Disgust", "Sadness", "Anger", "Surprise", "Fear", "Other"]
     emotion_counts = comments_df["Emotion"].value_counts()
-    # Create a bar chart using Plotly
-    fig = go.Figure(data=go.Bar(x=emotions, y=emotion_counts))
-    # Convert the Plotly figure to HTML
-    chart_html = fig.to_html(full_html=False)
+    all_counts = pd.Series(0, index=class_names)
+    all_counts.update(emotion_counts)
 
+    # Create a bar chart using Plotly
+    fig = px.bar(
+        x=class_names,
+        y=all_counts,
+        color=class_names,
+        labels={"x": "Emotion", "y": "Number of Comments", "color": "Emotion"},
+        text=all_counts,
+    )
+    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)")
+    fig.update_traces(
+        hovertemplate="<br>".join(
+            [
+                "Emotion: %{x}",
+                "Quantity: %{y}",
+            ]
+        )
+    )
+    # Convert the Plotly figure to HTML
+    chart_html = fig.to_html(full_html=False).replace(
+        "<div>", '<div class="col-6" style="height: 320px">'
+    )
     return render_template(
-        "analyze.html", dataframe=comments_df.to_html(index=False), chart=chart_html
+        "analyze.html",
+        total_comments=len(comments_df),
+        dataframe=comments_df.to_html(index=False, escape=False)
+        .replace(
+            '<table border="1" class="dataframe">',
+            '<table class="table table-fixed" style="table-layout: fixed; width: 100%;">',
+        )
+        .replace('<tr style="text-align: right;">', '<tr style="text-align: left;">')
+        .replace("<thead>", '<thead style="background-color: #ff0000;">')
+        .replace("<th>Author", '<th scope="col" style="width: 15%">Author')
+        .replace("<th>Comment", '<th scope="col" style="width: 70%">Comment')
+        .replace("<th>Emotion", '<th scope="col" style="width: 15%">Emotion'),
+        chart=chart_html,
     )
 
 
