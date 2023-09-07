@@ -1,5 +1,6 @@
 import regex as re
 import emoji
+import urllib.request
 import underthesea
 
 
@@ -139,7 +140,10 @@ def standardize_sentence_typing(text):
 
 
 # Normalize acronyms
-#!wget https://gist.githubusercontent.com/nguyenvanhieuvn/7d9441c10b3c2739499fc5a4d9ea06fb/raw/df939245b3e841b62af115be4dcb3516dadc9fc5/teencode.txt
+urllib.request.urlretrieve(
+    "https://gist.githubusercontent.com/nguyenvanhieuvn/7d9441c10b3c2739499fc5a4d9ea06fb/raw/df939245b3e841b62af115be4dcb3516dadc9fc5/teencode.txt",
+    filename="app/teencode.txt",
+)
 replace_list = {
     "ô kêi": "ok",
     "okie": "ok",
@@ -279,7 +283,7 @@ replace_list = {
     "🌟": "star",
 }
 
-with open(f"app\\teencode.txt", encoding="utf-8") as f:
+with open(f"app/teencode.txt", encoding="utf-8") as f:
     for pair in f.readlines():
         key, value = pair.split("\t")
         replace_list[key] = value.strip()

@@ -1,12 +1,11 @@
 from preprocess import text_preprocess, remove_HTML, convert_unicode
 import pandas as pd
-import json
 import plotly.express as px
 
 import torch
 import torch.nn as nn
 from transformers import AutoTokenizer, AutoModel
-
+import gdown
 from googleapiclient.discovery import build
 from flask import Flask, render_template, request, redirect, url_for
 
@@ -45,7 +44,8 @@ class SentimentClassifier(nn.Module):
 
 
 # Load model from file save
-model = torch.load(f"Model\\weights.pt")
+gdown.download(id="1LFtmnw_3ZwJOabDIuQzKXwd3uvYKzXGy", output="app/weights.pt")
+model = torch.load("app/weights.pt", map_location=device)
 
 class_names = ["Enjoyment", "Disgust", "Sadness", "Anger", "Surprise", "Fear", "Other"]
 
@@ -195,4 +195,6 @@ def analyze():
 
 
 if __name__ == "__main__":
-    app.run()
+    from waitress import serve
+
+    serve(app, host="0.0.0.0", port=8080)
