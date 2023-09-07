@@ -14,11 +14,13 @@ from flask import Flask, render_template, request, redirect, url_for
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 PRETRAINED_MODEL = "vinai/phobert-base-v2"
 MAX_LEN = 120
-API_KEY = ""
+API_KEY = "AIzaSyC-klgvTp1PFc7XMAJKypphlJnOqAIUJn4"
 
 # Download PhoBERT model
 phobert = AutoModel.from_pretrained(PRETRAINED_MODEL)
 tokenizer = AutoTokenizer.from_pretrained(PRETRAINED_MODEL)
+# Download weights.pt
+gdown.download(id="1amzwt-ApWbScxi-85fyGVohsdYaWea-C", output="app/weights.pt")
 
 
 # Define Sentiment Classifier and load Save Model
@@ -44,7 +46,6 @@ class SentimentClassifier(nn.Module):
 
 
 # Load model from file save
-gdown.download(id="1LFtmnw_3ZwJOabDIuQzKXwd3uvYKzXGy", output="app/weights.pt")
 model = torch.load("app/weights.pt", map_location=device)
 
 class_names = ["Enjoyment", "Disgust", "Sadness", "Anger", "Surprise", "Fear", "Other"]
@@ -70,6 +71,32 @@ def infer(text, tokenizer, max_len=MAX_LEN):
     _, y_pred = torch.max(output, dim=1)
 
     return class_names[y_pred]
+
+
+def get_video_info(video_id, api_key):
+    """
+    Get video information including title.
+
+    Args:
+        video_id (str): The ID of the YouTube video.
+        api_key (str): The API key for the YouTube API.
+
+    Returns:
+        dict: A dictionary containing video information, including title.
+    """
+    try:
+        # creating youtube resource object
+        youtube = build("youtube", "v3", developerKey=api_key)
+        # retrieve YouTube video results
+        video_response = youtube.videos().list(part="snippet", id=video_id).execute()
+
+        # Extract video title
+        video_title = video_response["items"][0]["snippet"]["title"]
+
+        return video_title
+
+    except:
+        print("Error getting video information")
 
 
 def get_video_comments(video_id, api_key):
@@ -150,6 +177,10 @@ def index():
 @app.route("/analyze", methods=["GET", "POST"])
 def analyze():
     VIDEO_ID = request.form["video_id"]
+
+    title = get_video_info(VIDEO_ID, API_KEY)
+    title_href = f"<a href='https://www.youtube.com/watch?v={VIDEO_ID}' target='_blank'><h3>{title}</h3></a>"
+
     comments_df = get_video_comments(VIDEO_ID, API_KEY)
 
     emotion_counts = comments_df["Emotion"].value_counts()
@@ -179,6 +210,7 @@ def analyze():
     )
     return render_template(
         "analyze.html",
+        video_title=title_href,
         total_comments=len(comments_df),
         dataframe=comments_df.to_html(index=False, escape=False)
         .replace(
