@@ -1,3 +1,4 @@
 app/__pycache__/*
 .vscode/*
 Model/weights.pt
+app/weights.pt
