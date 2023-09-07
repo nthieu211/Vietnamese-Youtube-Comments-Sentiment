@@ -24,10 +24,12 @@
                     <div class="row justify-content-center">
                         <div class="col-6" style="height: 320px">
                             <div class="text-left">
-                                <img src="../static/icon.svg" style="height: 100px">
+                                <a href="/">
+                                    <img src="../static/icon.svg" style="height: 100px">
+                                </a>
+                                <h1 style="color: #ff0000; margin-bottom: 30px;">EMOTIONAL ANALYSIS RESULT</h1>
+                                <h2>Total comments (no reply): {{ total_comments}}</h2>
                             </div>
-                            <h1 style="color: #ff0000; margin-bottom: 30px;">EMOTIONAL ANALYSIS RESULT</h1>
-                            <h2>Total comments (no reply): {{ total_comments}}</h2>
                         </div>
                         <!-- Plotly Chart -->
                         {{ chart|safe }}
