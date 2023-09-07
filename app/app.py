@@ -14,7 +14,7 @@ from flask import Flask, render_template, request, redirect, url_for
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 PRETRAINED_MODEL = "vinai/phobert-base-v2"
 MAX_LEN = 120
-API_KEY = "AIzaSyC-klgvTp1PFc7XMAJKypphlJnOqAIUJn4"
+API_KEY = ""
 
 # Download PhoBERT model
 phobert = AutoModel.from_pretrained(PRETRAINED_MODEL)
