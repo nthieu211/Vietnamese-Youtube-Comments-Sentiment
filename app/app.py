@@ -228,6 +228,7 @@ def analyze():
 
 if __name__ == "__main__":
     from waitress import serve
+    import os
 
     port = os.environ.get("PORT", 80)
     serve(app, host="0.0.0.0", port=port)
