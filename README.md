@@ -20,8 +20,6 @@ The website is built based on the Flask library, using the Plotly library to dra
 
 ### How to use
 
-To test my website you can visit: http://159.65.7.110/
-
 First, copy and paste the YouTube video link to analyze comments into the box below and click `Analyze` button.
 
 ![Homepage](./screenshot/home.jpg)
