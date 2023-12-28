@@ -14,4 +14,4 @@ underthesea==6.7.0
 gdown==4.7.1
 google-api-python-client==2.97.0
 flask==2.3.3
-waitress==2.0.0
+waitress>=2.1.1
