@@ -1,5 +1,28 @@
-app/__pycache__/*
+.venv/*
+DATASET-UIT-VSMEC/*
+Model/*.pt
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+yt-sent/node_modules
+yt-sent/dist
+yt-sent/dist-ssr
+*.local
+
+# Editor directories and files
 .vscode/*
-Model/weights.pt
-app/weights.pt
-app/teencode.txt
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
