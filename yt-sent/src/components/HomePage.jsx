@@ -1,7 +1,8 @@
 import "./HomePage.scss";
 import ytSentLogo from "/yt-sent.svg";
-import { useState } from "react";
 import { ImSpinner2 } from "react-icons/im";
+import { useState } from "react";
+import { toast } from "react-toastify";
 
 const HomePage = () => {
   const [linkVideo, setLinkVideo] = useState("");
@@ -22,9 +23,10 @@ const HomePage = () => {
     if (videoId) {
       await callApi();
       setIsLoading(false);
-      console.log(`Video ID: ${videoId}`);
+      toast.success(`Video ID: ${videoId}`);
     } else {
-      console.log("Invalid Youtube video link!");
+      setIsLoading(false);
+      toast("Invalid Youtube video link!");
     }
   };
 

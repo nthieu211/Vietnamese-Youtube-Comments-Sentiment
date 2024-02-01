@@ -5,6 +5,7 @@
       padding: 1.5em;
       will-change: filter;
       transition: filter 300ms;
+      margin-top: 5em;
 
       &:hover {
         filter: drop-shadow(0 0 2em #e53935aa);
@@ -40,6 +41,13 @@
         font-size: 1em;
         padding-left: 1.2em;
         border-radius: 5em;
+        border: 1px solid #e53935;
+
+        &:focus {
+          outline: none;
+          box-shadow: none;
+          filter: drop-shadow(0 0 1em #e53935aa);
+        }
       }
     }
     margin-bottom: 20vh;

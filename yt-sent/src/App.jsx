@@ -1,11 +1,15 @@
 import "./App.scss";
-import HomePage from "./components/HomePage";
+import Header from "./components/Header";
+import { Outlet } from "react-router-dom";
 
 function App() {
   return (
-    <div className="app-container container">
-      <HomePage />
-    </div>
+    <>
+      <Header />
+      <div className="app-container container">
+        <Outlet />
+      </div>
+    </>
   );
 }
 

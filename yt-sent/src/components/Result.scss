@@ -1,0 +1,47 @@
+.result-container {
+    min-height: 90vh;
+    .paginate {
+        display: flex;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+
+    .title-result {
+        margin: 1em 0;
+    }
+
+    .dashboard{
+        .content-left {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5em;
+
+            .card {
+                width: calc(50% - 0.25em);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                .card-text {
+                    margin: 0.5em 0;
+                    font-size: 24px;
+                    font-weight: 600;
+                }
+
+            }
+        }
+
+        .content-right {
+            height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+    }
+
+    .table-comments {
+        margin-top: 2em;
+    }
+}
