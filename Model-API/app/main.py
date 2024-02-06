@@ -1,15 +1,16 @@
 import os
 import json
 import pathlib
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks
+from fastapi_utils.tasks import repeat_every
 from pydantic import BaseModel
 from typing import Annotated, Optional
-from app.utils.YoutubeAPI import get_video_comments, get_video_info
-from app.sentimentmodel.Task import TaskPredict
 from app import models
 from app.database import engine, SessionLocal
+from app.utils.YoutubeAPI import get_video_comments, get_video_info
+from app.sentimentmodel.Task import TaskPredict
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
@@ -108,9 +109,15 @@ def statistics(videoId: str, db: db_dependency):
 
 
 @app.on_event("startup")
-def on_startup():
+async def on_startup():
     global T
     T = TaskPredict(MODEL_DIR / "sentiment-model.pth", MODEL_METADATA)
+    await delete_old_comments()
+
+
+@app.get("/")
+async def root():
+    return {"message": "Vietnamese Youtube Comments Sentiment"}
 
 
 @app.post("/analyze")  # ?videoId=videoId
@@ -121,6 +128,24 @@ async def analyze(videoId: str, db: db_dependency):
         return {"EC": 1, "EM": str(e), "data": {}}
     list_text = [comment["comment"] for comment in comments]
     predictions = T.predict(list_text)
+    # Check if there are comments already analyzed
+    threshold_time = datetime.now() - timedelta(hours=1)
+    if (
+        db.query(models.Comment)
+        .filter(
+            models.Comment.videoId == videoId,
+            models.Comment.timeCreated_inDB > threshold_time,
+        )
+        .count()
+        > 0
+    ):
+        return {
+            "EC": 0,
+            "EM": "Comments already analyzed in database",
+            "data": {},
+        }
+    else:
+        db.query(models.Comment).filter(models.Comment.videoId == videoId).delete()
     for i, comment in enumerate(comments):
         comment["sentiment"] = predictions[i]
         db_comment = models.Comment(
@@ -173,3 +198,21 @@ async def result(
     )
     data["comments"] = comments
     return {"EC": 0, "EM": "Successfully get result", "data": data}
+
+
+@repeat_every(hours=6)
+def delete_old_comments(background_tasks=BackgroundTasks):
+    db = SessionLocal()
+    try:
+        threshold_time = datetime.now() - timedelta(hours=1)
+        db.query(models.Comment).filter(
+            models.Comment.timeCreated_inDB < threshold_time
+        ).delete()
+        db.commit()
+        print(f"{datetime.now()} - Deleted old comments")
+        return {"EC": 0, "EM": "Deleted old comments", "data": {}}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
