@@ -1,13 +1,21 @@
 import regex as re
 import emoji
-import urllib.request
-import underthesea
+import py_vncorenlp
+import os
+
+vncorenlp_path = os.path.join(os.path.dirname(__file__), "vncorenlp")
+os.makedirs(vncorenlp_path, exist_ok=True)
+if not os.path.exists(os.path.join(vncorenlp_path, "VnCoreNLP-1.2.jar")):
+    py_vncorenlp.download_model(save_dir=vncorenlp_path)
+rdrsegmenter = py_vncorenlp.VnCoreNLP(annotators=["wseg"], save_dir=vncorenlp_path)
 
 
 # Remove HTML code
-def remove_HTML(text):
+def remove_HTML_URL(text):
     html = re.compile(r"<[^>]+>")
-    return html.sub("", text).replace("\r", " ")
+    text = html.sub("", text).replace("\r", " ")
+    text = re.sub(r"\S*(https|http)?:\S*", "", text)  # Remove URL
+    return text
 
 
 # Standardize unicode
@@ -140,10 +148,8 @@ def standardize_sentence_typing(text):
 
 
 # Normalize acronyms
-urllib.request.urlretrieve(
-    "https://gist.githubusercontent.com/nguyenvanhieuvn/7d9441c10b3c2739499fc5a4d9ea06fb/raw/df939245b3e841b62af115be4dcb3516dadc9fc5/teencode.txt",
-    filename="app/teencode.txt",
-)
+# !wget https://gist.githubusercontent.com/nguyenvanhieuvn/7d9441c10b3c2739499fc5a4d9ea06fb/raw/df939245b3e841b62af115be4dcb3516dadc9fc5/teencode.txt
+
 replace_list = {
     "ô kêi": "ok",
     "okie": "ok",
@@ -175,13 +181,15 @@ replace_list = {
     "haha": "cười",
     "hjhj": "cười",
     "thick": "thích",
-    "cc": "chửi tục",
     "huhu": "khóc",
     "cute": "dễ thương",
+    "cc": "chửi tục",
     "cặc": "chửi tục",
     "dm": "chửi tục",
     "dmm": "chửi tục",
     "dume": "chửi tục",
+    "dma": "chửi tục",
+    "vl": "chửi tục",
     "sz": "cỡ",
     "size": "cỡ",
     "wa": "quá",
@@ -201,6 +209,7 @@ replace_list = {
     "r": "rồi",
     "bjo": "bao giờ",
     "very": "rất",
+    "nk": "nó",
     "authentic": "chuẩn chính hãng",
     "aut": "chuẩn chính hãng",
     "auth": "chuẩn chính hãng",
@@ -262,28 +271,42 @@ replace_list = {
     "sd": "sử dụng",
     "sài": "xài",
     "^_^": "cười",
-    ":)": "mỉm cười",
-    ":(": "buồn",
+    ":)": "cười",
+    ":))": "cười",
+    ":)))": "cười",
     "=))": "cười",
+    "=)))": "cười",
+    ":(": "buồn",
+    ":((": "buồn",
+    ":(((": "buồn",
     "❤️": "yêu thích",
     "👍": "thích",
-    "''''''''''🎉": "chúc mừng",
-    "''''''''''😀": "cười",
-    "''''''''''😍": "yêu thích",
-    "''''''''''😂": "cười chảy nước mắt",
-    "''''''''''🤗": "vỗ tay",
-    "''''''''''😙": "cười",
-    "''''''''''🙂": "mỉm cười",
+    "🎉": "chúc mừng",
+    "😀": "cười",
+    "😍": "yêu thích",
+    "😂": "cười lớn",
+    "🤣": "cười lớn",
+    "🤗": "vỗ tay",
+    "😙": "cười",
+    "🙂": "cười",
     "😔": "buồn",
-    "''''''''''😓": "buồn",
+    "😓": "buồn",
     "T_T": "khóc",
-    "''''''''''😭": "khóc lớn",
+    "😭": "khóc lớn",
+    "😡": "giận dữ",
+    "🤬": "giận dữ",
+    "🤡": "mặt chú hề",
+    "😩": "thất vọng",
+    "😞": "thất vọng",
+    "😢": "xúc động",
     "⭐": "star",
     "*": "star",
     "🌟": "star",
 }
 
-with open(f"app/teencode.txt", encoding="utf-8") as f:
+with open(
+    os.path.join(os.path.dirname(__file__), "teencode.txt"), encoding="utf-8"
+) as f:
     for pair in f.readlines():
         key, value = pair.split("\t")
         replace_list[key] = value.strip()
@@ -299,40 +322,21 @@ def normalize_acronyms(text):
     return emoji.demojize(" ".join(words))  # Remove Emojis
 
 
-# Remove unnecessary characters
-def remove_unnecessary_characters(text):
-    text = re.sub(
-        r"[^\s\wáàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệóòỏõọôốồổỗộơớờởỡợíìỉĩịúùủũụưứừửữựýỳỷỹỵđÁÀẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÉÈẺẼẸÊẾỀỂỄỆÓÒỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÍÌỈĨỊÚÙỦŨỤƯỨỪỬỮỰÝỲỶỸỴĐ_]",
-        " ",
-        text,
-    )
-    text = re.sub(r"[\.,\?]+$-", "", text)
-    text = (
-        text.replace(",", " ")
-        .replace(".", " ")
-        .replace(";", " ")
-        .replace("“", " ")
-        .replace(":", " ")
-        .replace("”", " ")
-        .replace('"', " ")
-        .replace("'", " ")
-        .replace("!", " ")
-        .replace("?", " ")
-        .replace("-", " ")
-        .replace("?", " ")
-    )
-    text = re.sub(r"\s+", " ", text).strip()  # Remove extra whitespace
-    return text
-
-
 # Word segmentation & Tokenize
-def word_segmentation(line):
-    return underthesea.word_tokenize(line, format="text")
+def word_segmentation(text):
+    return rdrsegmenter.word_segment(text)
 
 
 def text_preprocess(text):
+    text = convert_unicode(text)
     text = standardize_sentence_typing(text)
     text = normalize_acronyms(text)
+    text = re.sub(
+        r"[^\s\wáàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệóòỏõọôốồổỗộơớờởỡợíìỉĩịúùủũụưứừửữựýỳỷỹỵđ_]",
+        " ",
+        text,
+    )  # Remove unnecessary character
+    text = re.sub(r"\s+", " ", text).strip()  # Remove spacing > 1
     text = word_segmentation(text)  # required for PhoBERT
-    text = remove_unnecessary_characters(text)
+    text = " ".join(text)  # return 1 string
     return text
