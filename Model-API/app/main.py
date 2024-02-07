@@ -185,7 +185,7 @@ async def result(
         // limit
     )
     if page > data["totalPages"]:
-        return {"EC": 1, "EM": "Invalid page", "data": {}}
+        return {"EC": 1, "EM": "Invalid page/limit", "data": {}}
     info = statistics(videoId, db)
     data.update(info)
     comments = (
@@ -200,7 +200,7 @@ async def result(
     return {"EC": 0, "EM": "Successfully get result", "data": data}
 
 
-@repeat_every(hours=6)
+@repeat_every(seconds=3600 * 6)
 def delete_old_comments(background_tasks=BackgroundTasks):
     db = SessionLocal()
     try:

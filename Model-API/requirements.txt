@@ -2,7 +2,6 @@ pandas==2.2.0
 regex==2023.12.25
 openpyxl==3.1.2
 emoji==2.10.1
-torch==2.2.0
 scikit-learn==1.4.0
 transformers==4.37.2
 py_vncorenlp==0.1.4
@@ -15,5 +14,5 @@ fasttext-langdetect==1.0.5
 fastapi==0.109.2
 fastapi-utils==0.2.1
 uvicorn==0.27.0.post1
-sqlalchemy==2.0.25
+sqlalchemy==1.4.51
 psycopg2-binary==2.9.9
