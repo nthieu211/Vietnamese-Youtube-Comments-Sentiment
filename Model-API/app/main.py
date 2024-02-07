@@ -4,6 +4,7 @@ import pathlib
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi_utils.tasks import repeat_every
 from pydantic import BaseModel
 from typing import Annotated, Optional
@@ -16,6 +17,15 @@ from sqlalchemy.orm import Session
 
 load_dotenv()
 app = FastAPI()
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 models.Base.metadata.create_all(bind=engine)
 
 BASE_DIR = pathlib.Path(__file__).resolve().parent
@@ -122,12 +132,6 @@ async def root():
 
 @app.post("/analyze")  # ?videoId=videoId
 async def analyze(videoId: str, db: db_dependency):
-    try:
-        comments = get_video_comments(videoId, YOUTUBE_API_KEY, max_results=500)
-    except Exception as e:
-        return {"EC": 1, "EM": str(e), "data": {}}
-    list_text = [comment["comment"] for comment in comments]
-    predictions = T.predict(list_text)
     # Check if there are comments already analyzed
     threshold_time = datetime.now() - timedelta(hours=1)
     if (
@@ -146,20 +150,48 @@ async def analyze(videoId: str, db: db_dependency):
         }
     else:
         db.query(models.Comment).filter(models.Comment.videoId == videoId).delete()
+    # Get new comments
+    try:
+        comments = get_video_comments(videoId, YOUTUBE_API_KEY, max_results=500)
+    except Exception as e:
+        return {"EC": 1, "EM": str(e), "data": {}}
+    list_text = [comment["comment"] for comment in comments]
+    predictions = T.predict(list_text)
     for i, comment in enumerate(comments):
         comment["sentiment"] = predictions[i]
-        db_comment = models.Comment(
-            id=str(comment["id"]),
-            videoId=videoId,
-            username=str(comment["username"]),
-            comment=str(comment["comment"]),
-            sentiment=str(comment["sentiment"]),
-            like=int(comment["like"]),
-            timeCommented=datetime.fromisoformat(comment["timeCommented"][:-1]),
-        )
-        db.add(db_comment)
-        db.commit()
-        db.refresh(db_comment)
+        if (
+            db.query(models.Comment).filter(models.Comment.id == str(comment["id"]))
+        ).count() > 0:
+            # Update this comment
+            db.query(models.Comment).filter(
+                models.Comment.id == str(comment["id"])
+            ).update(
+                {
+                    "videoId": videoId,
+                    "username": str(comment["username"]),
+                    "comment": str(comment["comment"]),
+                    "sentiment": str(comment["sentiment"]),
+                    "like": int(comment["like"]),
+                    "timeCommented": datetime.fromisoformat(
+                        comment["timeCommented"][:-1]
+                    ),
+                    "timeCreated_inDB": datetime.now(),
+                }
+            )
+        else:
+            # Create new comment
+            db_comment = models.Comment(
+                id=str(comment["id"]),
+                videoId=videoId,
+                username=str(comment["username"]),
+                comment=str(comment["comment"]),
+                sentiment=str(comment["sentiment"]),
+                like=int(comment["like"]),
+                timeCommented=datetime.fromisoformat(comment["timeCommented"][:-1]),
+            )
+            db.add(db_comment)
+            db.commit()
+            db.refresh(db_comment)
     return {"EC": 0, "EM": "Successfully analyze video", "data": {}}
 
 
