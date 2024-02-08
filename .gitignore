@@ -1,9 +1,7 @@
 .venv/*
 .env
+*.pyc
 Model-API/model-weight/*
-Model-API/app/__pycache__/*
-Model-API/app/utils/__pycache__/*
-Model-API/app/sentimentmodel/__pycache__/*
 Model-API/app/utils/vncorenlp/*
 
 # Logs

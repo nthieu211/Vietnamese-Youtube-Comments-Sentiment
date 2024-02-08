@@ -6,10 +6,7 @@ import os
 # Start VnCoreNLP
 vncorenlp_path = os.path.join(os.path.dirname(__file__), "vncorenlp")
 if not os.path.exists(os.path.join(vncorenlp_path, "VnCoreNLP-1.2.jar")):
-    print("Downloading vncorenlp...")
-    os.makedirs(vncorenlp_path, exist_ok=True)
-    py_vncorenlp.download_model(save_dir=vncorenlp_path)
-    print(f"Downloaded vncorenlp at {vncorenlp_path}")
+    raise FileNotFoundError(f"Not found VnCoreNLP at {vncorenlp_path}")
 rdrsegmenter = py_vncorenlp.VnCoreNLP(annotators=["wseg"], save_dir=vncorenlp_path)
 
 
