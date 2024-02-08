@@ -57,24 +57,6 @@ Website: build with Vite.js, using ReactJS
 - Responsive web design.
 - Support language: English and Vietnamese.
 
-### How to run API
-
-Requirements: **Docker installed**
-
-1. Clone this repo
-
-```
-git clone https://github.com/nthieu211/Vietnamese-Youtube-Comments-Sentiment.git
-```
-
-2. Change dir to Model-API and run docker
-
-```
-cd Vietnamese-Youtube-Comments-Sentiment
-cd Model-API
-docker-compose up
-```
-
 # References
 
 1. [Emotion Recognition for Vietnamese Social Media Text](https://arxiv.org/abs/1911.09339)

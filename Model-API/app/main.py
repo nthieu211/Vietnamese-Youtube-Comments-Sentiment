@@ -1,6 +1,7 @@
 import os
 import json
 import pathlib
+import math
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks
@@ -215,9 +216,9 @@ async def result(
     else:
         sortby = models.Comment.timeCommented
     data = {}
-    data["totalPages"] = (
+    data["totalPages"] = math.ceil(
         db.query(models.Comment).filter(models.Comment.videoId == videoId).count()
-        // limit
+        / limit
     )
     if page > data["totalPages"]:
         return {"EC": 1, "EM": "Invalid page/limit", "data": {}}
