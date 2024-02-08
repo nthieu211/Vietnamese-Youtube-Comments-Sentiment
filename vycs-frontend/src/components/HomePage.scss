@@ -1,0 +1,63 @@
+.home-container {
+  
+    .logo {
+      height: 14em;
+      padding: 1.5em;
+      will-change: filter;
+      transition: filter 300ms;
+      margin-top: 5em;
+
+      &:hover {
+        filter: drop-shadow(0 0 2em #e53935aa);
+      }
+    }
+    
+    .input-group{
+      margin-top: 2em;
+
+      .btn-analyze {
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+        font-size: 1em;
+        background-color: #e53935;
+        border: none;
+        border-radius: 5em;
+        padding: 0.7em 1.2em 0.7em 1em;
+        will-change: filter;
+        transition: filter 300ms;
+  
+        &:hover {
+          filter: drop-shadow(0 0 1em #e53935aa);
+        }
+
+        .loading-icon {
+          font-size: 1.1em;
+          animation: spin-animation 0.5s linear infinite;
+        }
+      }
+  
+      .video-link {
+        font-size: 1em;
+        padding-left: 1.2em;
+        border-radius: 5em;
+        border: 1px solid #e53935;
+
+        &:focus {
+          outline: none;
+          box-shadow: none;
+          filter: drop-shadow(0 0 1em #e53935aa);
+        }
+      }
+    }
+    margin-bottom: 20vh;
+  }
+
+  @keyframes spin-animation {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(359deg);
+    }
+  }

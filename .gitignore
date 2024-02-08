@@ -1,5 +1,32 @@
-app/__pycache__/*
+.venv/*
+.env
+Model-API/model-weight/*
+Model-API/app/__pycache__/*
+Model-API/app/utils/__pycache__/*
+Model-API/app/model/__pycache__/*
+Model-API/app/utils/vncorenlp/*
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+vycs-frontend/node_modules
+vycs-frontend/dist
+vycs-frontend/dist-ssr
+*.local
+
+# Editor directories and files
 .vscode/*
-Model/weights.pt
-app/weights.pt
-app/teencode.txt
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

@@ -2,34 +2,80 @@
 
 Web application classifies and statistics 7 emotional states such as enjoyment, disgust, sadness, anger, surprise, fear and others from Vietnamese comments on YouTube. The model is based on the pre-trained model of [**VinAI Research - PhoBert**](https://github.com/VinAIResearch/PhoBERT)
 
+Update v2.0: New website
+
+- API: FastAPI(python) + Postgres(Database)
+- Web: ReactJS + Bootstrap 5.3
+
 ## Dataset
 
-[UIT-VSMEC](https://paperswithcode.com/paper/emotion-recognition-for-vietnamese-social): The dataset contains **6,927** sentences annotated with 7 emotions [enjoyment, disgust, sadness, anger, surprise, fear and others]. The authors of the article tried to apply several machine learning and deep learning models with UIT-VSMEC. Among the tested models, the Convolutional Neural Network (CNN) model performed the best, achieving a weighted F1-score of **59.74%**.
+### [UIT-VSMEC (2019)](https://arxiv.org/abs/1911.09339) - **Emotion Recognition for Vietnamese Social Media Text**
 
-From the **6,927** sentences divided into 3 files (`train`, `valid`, `test`) in the dataset, I combined the 2 files `train`, `valid` into a set of **6234** sentences then used K-fold cross-validation (K=2) as training data. The remaining **693** sentences in file `test` are used as testing data.
+The dataset contains **6,927** emotion-annotated sentences with 7 emotions (enjoyment, disgust, sadness, anger, surprise, fear and others). The authors of the article tried to apply machine learning and deep neural network models with UIT-VSMEC. Among the tested models, the Convolutional Neural Network (CNN) model performed the best, achieving a weighted F1-score of **59.74%**.
+
+From 6,927 sentences divided into 3 subset:
+
+- Training set: 5548 sentences
+- Validation set: 686 sentences
+- Test set: 693 sentences
 
 ## Model
 
-First, the sentences in the dataset will be standardized according to the utf-8 encoding and preprocessed (delete HTML code, replace common acronym/emoji, delete unnecessary characters). Finally, word segmentation of sentences before training (required for phoBERT).
+### [PhoBERT (2020)](https://arxiv.org/abs/2003.00744) - **Pre-trained language models for Vietnamese**
 
-After training 2-fold, 8 epochs, the model performed best, achieving a weighted F1 score of 65% for the test data and being relatively balanced between classes despite the imbalanced dataset was also like imperfect labeling
+The first public large-scale monolingual language models pre-trained for Vietnamese. Models using a 20GB word-level Vietnamese corpus with (~1GB ) Vietnamese Wikipedia and (~19GB) generated from Vietnamese news corpus.
 
-## Website
+Base on pre-trained PhoBERT-base, the model is built to classify 7 emotion labels of the data set.
 
-The website is built based on the Flask library, using the Plotly library to draw charts and YouTube Data API v3 to retrieve comments from Youtube.
+### Model result
 
-### How to use
+| #              | **First**  | **Second**        | **Third**         |
+| -------------- | ---------- | ----------------- | ----------------- |
+| Learning rate  | 1e-5       | 1e-5              | 1e-5              |
+| Weight decay   | 1e-3       | 1e-2              | 1e-2              |
+| LR Scheduler   | OneCycleLR | ReduceLROnPlateau | ReduceLROnPlateau |
+| Linear layer   | None       | 512               | 256               |
+| Dropout        | 0.3        | 0.4               | 0.5               |
+| Batch size     | 16         | 16                | 8                 |
+| Valid F1-score | 0.5985     | 0.6179            | 0.6268            |
+| Valid Accuracy | 0.6137     | 0.6224            | 0.6283            |
+| Test F1-score  | 0.5892     | 0.6291            | 0.6396            |
+| Test Accuracy  | 0.5931     | 0.6291            | 0.6407            |
 
-First, copy and paste the YouTube video link to analyze comments into the box below and click `Analyze` button.
+## Website v2.0:
 
-![Homepage](./screenshot/home.jpg)
+API: using FastAPI(python3) and Postgres database
 
-After a period of time (depending on the number of comments), the analysis results are given as shown below.
+- Get all comments (limit 500 comments) from Youtube/
+- Preprocess text (remove URL, HTML tag, typping error, word segment,...)
+- Predict emotions, statistic result.
+- Return result with paginated/
+- Easily deploy with docker.
 
-![Result](./screenshot/result.jpg)
+Website: build with Vite.js, using ReactJS
+
+- Responsive web design.
+- Support language: English and Vietnamese.
+
+### How to run API
+
+Requirements: **Docker installed**
+
+1. Clone this repo
+
+```
+git clone https://github.com/nthieu211/Vietnamese-Youtube-Comments-Sentiment.git
+```
+
+2. Change dir to Model-API and run docker
+
+```
+cd Vietnamese-Youtube-Comments-Sentiment
+cd Model-API
+docker-compose up
+```
 
 # References
 
-1. [Emotion Recognition for Vietnamese Social Media Text](https://paperswithcode.com/paper/emotion-recognition-for-vietnamese-social)
-2. [PhoBERT: Pre-trained language models for Vietnamese](https://github.com/VinAIResearch/PhoBERT)
-3. [[PhoBERT] Classification for Vietnamese Text](https://www.kaggle.com/code/trnmtin/phobert-classification-for-vietnamese-text/notebook)
+1. [Emotion Recognition for Vietnamese Social Media Text](https://arxiv.org/abs/1911.09339)
+2. [PhoBERT: Pre-trained language models for Vietnamese](https://arxiv.org/abs/2003.00744)

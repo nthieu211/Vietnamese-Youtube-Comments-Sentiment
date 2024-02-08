@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg" href="/images/yt-sent.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vietnamese Youtube Comments Sentiment</title>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+  <script>
+    (function () {
+      const htmlElement = document.querySelector("html")
+      if (htmlElement.getAttribute("data-bs-theme") === 'auto') {
+        function updateTheme() {
+          document.querySelector("html").setAttribute("data-bs-theme",
+            window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateTheme)
+        updateTheme()
+      }
+    })();
+  </script>
+</body>
+
+</html>
