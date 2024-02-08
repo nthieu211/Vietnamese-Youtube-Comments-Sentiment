@@ -1,10 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Navbar, Nav, Container, NavDropdown, Form } from "react-bootstrap";
-import ytSentLogo from "/yt-sent.svg";
+import { useTranslation } from "react-i18next";
+import ytSentLogo from "/images/yt-sent.svg";
 
 const Header = () => {
+  const { t, i18n } = useTranslation();
   const [language, setLanguage] = useState("en"); // "en" | "vi"
+  useEffect(() => {
+    i18n.changeLanguage(language);
+  }, [language]);
 
   return (
     <Navbar expand="md" className="bg-body-tertiary">
@@ -16,10 +21,10 @@ const Header = () => {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
             <NavLink to="/" className="nav-link">
-              Home
+              {t("header.home")}
             </NavLink>
             <NavLink to="/model" className="nav-link">
-              About Model
+              {t("header.model")}
             </NavLink>
           </Nav>
           <Nav>

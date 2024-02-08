@@ -1,12 +1,17 @@
 import "./HomePage.scss";
-import ytSentLogo from "/yt-sent.svg";
+import ytSentLogo from "/images/yt-sent.svg";
 import { ImSpinner2 } from "react-icons/im";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
+import { postAnalyze } from "../services/apiServices";
 
 const HomePage = () => {
   const [linkVideo, setLinkVideo] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const validateLink = (url) => {
     var p =
@@ -21,33 +26,27 @@ const HomePage = () => {
   const submitLink = async () => {
     const videoId = validateLink(linkVideo);
     if (videoId) {
-      await callApi();
-      setIsLoading(false);
-      toast.success(`Video ID: ${videoId}`);
+      let res = await postAnalyze(videoId);
+      if (res && res.data.EC === 0) {
+        setIsLoading(false);
+        navigate(`/result/${videoId}`);
+      } else {
+        setIsLoading(false);
+        toast(res?.data?.EM || t("homepage.errorOccurred"));
+      }
     } else {
       setIsLoading(false);
-      toast("Invalid Youtube video link!");
+      toast(t("homepage.invalidYoutubeLink"));
     }
-  };
-
-  const callApi = () => {
-    // fake api call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve();
-      }, 2000);
-    });
+    setIsLoading(false);
   };
 
   return (
     <div className="home-container container text-center">
       <img src={ytSentLogo} className="logo" alt="logo" />
       <div className="title">
-        <h1>Vietnamese Youtube Comments Sentiment</h1>
-        <p>
-          Paste your Youtube video link here, and we will analyze the sentiment
-          of the comments.
-        </p>
+        <h1>{t("homepage.title")}</h1>
+        <p>{t("homepage.describe")}</p>
       </div>
       <div className="col-lg-6 col-md-8 col-11 mx-auto mt-5">
         <div className="input-group">
@@ -55,7 +54,7 @@ const HomePage = () => {
             type="url"
             className="form-control video-link"
             value={linkVideo}
-            placeholder="Paste Youtube video link here"
+            placeholder={t("homepage.textPlaceholder")}
             aria-label="Youtube Video"
             onChange={(e) => setLinkVideo(e.target.value)}
           />
@@ -69,7 +68,7 @@ const HomePage = () => {
             }}
           >
             {isLoading && <ImSpinner2 className="loading-icon" />}
-            Analyze
+            {t("homepage.button")}
           </button>
         </div>
       </div>

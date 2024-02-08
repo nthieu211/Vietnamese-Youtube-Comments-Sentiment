@@ -15,9 +15,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-yt-sent/node_modules
-yt-sent/dist
-yt-sent/dist-ssr
+vycs-frontend/node_modules
+vycs-frontend/dist
+vycs-frontend/dist-ssr
 *.local
 
 # Editor directories and files
