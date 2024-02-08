@@ -29,8 +29,9 @@ app.add_middleware(
 models.Base.metadata.create_all(bind=engine)
 
 BASE_DIR = pathlib.Path(__file__).resolve().parent
-MODEL_DIR = BASE_DIR.parent / "model-weight"
-MODEL_METADATA = MODEL_DIR / "model-metadata.json"
+MODEL_DIR = os.path.join(BASE_DIR.parent, "model-weight")
+MODEL_PATH = os.path.join(MODEL_DIR, "sentiment-model.pth")
+MODEL_METADATA_PATH = os.path.join(MODEL_DIR, "model-metadata.json")
 YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY")
 
 
@@ -121,7 +122,7 @@ def statistics(videoId: str, db: db_dependency):
 @app.on_event("startup")
 async def on_startup():
     global T
-    T = TaskPredict(MODEL_DIR / "sentiment-model.pth", MODEL_METADATA)
+    T = TaskPredict(MODEL_PATH, MODEL_METADATA_PATH)
     await delete_old_comments()
 
 

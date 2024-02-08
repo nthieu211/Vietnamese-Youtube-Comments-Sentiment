@@ -6,16 +6,17 @@ from app.sentimentmodel.SentimentDataset import *
 
 
 class TaskPredict:
-    def __init__(self, model_path: Path, metadata_path: Path):
+    def __init__(self, model_path, metadata_path):
         self.model_path = model_path
         self.metadata_path = metadata_path
-        if not self.model_path.exists():
+        if not os.path.exists(self.model_path):
             raise FileNotFoundError(f"Model file not found at {model_path}")
-        if not self.metadata_path.exists():
+        if not os.path.exists(self.metadata_path):
             raise FileNotFoundError(f"Metadata file not found at {metadata_path}")
         self.device = torch.device("cpu")
         # Load metadata
-        self.config = json.loads(self.metadata_path.read_text())
+        with open(self.metadata_path) as json_file:
+            self.config = json.load(json_file)
         self.model = SentimentClassifier(self.config["MODEL"])
         self.model.load_state_dict(
             torch.load(self.model_path, map_location=self.device)

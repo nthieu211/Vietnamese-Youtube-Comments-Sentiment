@@ -5,13 +5,13 @@ version: '3.8'
 services:
   web:
     build: .
-    command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; uvicorn app.main:app --host 0.0.0.0 --port 8000'
+    command: bash -c 'python -u pipelines/download-sent-model.py; while !</dev/tcp/db/5432; do sleep 1; done; uvicorn app.main:app --host 0.0.0.0 --port 8000'
     volumes:
       - .:/code
     ports:
       - 8008:8000
     environment:
-    - DATABASE_URL=${URL_DATABASE}
+      - DATABASE_URL=${URL_DATABASE}
     depends_on:
       - db
   db:

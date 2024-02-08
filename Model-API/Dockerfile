@@ -10,6 +10,7 @@ RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    wget \
     git \
     openjdk-17-jre-headless \
     && apt-get clean \
@@ -24,5 +25,3 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install torch==2.1.2 --index-url https://download.pytorch.org/whl/cpu
 
 COPY . .
-
-RUN python -m pypyr pipelines/sentiment-model-download
