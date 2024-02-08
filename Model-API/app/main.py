@@ -155,6 +155,8 @@ async def analyze(videoId: str, db: db_dependency):
         comments = get_video_comments(videoId, YOUTUBE_API_KEY, max_results=500)
     except Exception as e:
         return {"EC": 1, "EM": str(e), "data": {}}
+    if len(comments) == 0:
+        return {"EC": 1, "EM": "No comments found", "data": {}}
     list_text = [comment["comment"] for comment in comments]
     predictions = T.predict(list_text)
     for i, comment in enumerate(comments):
