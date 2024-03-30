@@ -2,7 +2,7 @@
 
 Web application classifies and statistics 7 emotional states such as enjoyment, disgust, sadness, anger, surprise, fear and others from Vietnamese comments on YouTube. The model is based on the pre-trained model of [**VinAI Research - PhoBert**](https://github.com/VinAIResearch/PhoBERT)
 
-Update v2.0: New website https://vietnamese-youtube-comments-sentiment.vercel.app/
+Update v2.0: New website ~~https://vietnamese-youtube-comments-sentiment.vercel.app/~~
 - API: FastAPI(python) + Postgres(Database)
 - Web: ReactJS + Bootstrap 5.3
 
